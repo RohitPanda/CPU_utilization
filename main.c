@@ -134,10 +134,14 @@ int main()
     char *pid;
     int i =0;
     int pidno[64];
-    FILE *fp = popen("pidof chrome","r");
+    FILE *fp = popen("pgrep -f youtube_test","r");
+    if (fp == NULL) {
+	printf("Failed to run command\n" );
+	exit(1);
+    }
     fgets(pidline,1024,fp);
     
-    //printf("%s",pidline);
+    printf("%s",pidline);
     pid = strtok (pidline," ");
     while(pid != NULL)
     {
@@ -147,14 +151,16 @@ int main()
         pid = strtok (NULL , " ");
         i++;
     }
-    printf("%d\n",pidno[0]);
+    //printf("%d\n",pidno[0]);
     pclose(fp);
 
     while(1)
     {
-        get_usage(26945, &first);
+        if(get_usage(pidno[0], &first) == -1)
+		break;
         nanosleep(&tm, NULL);
-        get_usage(26945, &second);
+        if(get_usage(pidno[0], &second) == -1)
+		break;
         calc_cpu_usage_pct(&second, &first, &cpu_usage, &scpu_usage);
         //printf("%lld,%f,%f\n", current_timestamp(), cpu_usage*nb, scpu_usage*nb);
         printf("%lld,%f\n", current_timestamp(), (cpu_usage+scpu_usage)*nb);
